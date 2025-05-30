@@ -47,16 +47,18 @@ To try a Terraform configuration:
    cd terraform-playground/<project-folder>
 
 2. Initialize Terraform:
+   ```bash
    terraform init
 
-3. Plan and apply:
+4. Plan and apply:
+   ```bash
    terraform plan -var-file="dev.tfvars"
    terraform apply -var-file="dev.tfvars"
 
 
 👥 Contributing
 Contributions are welcome! Here’s how you can help:
-Add new Terraform modules or use-cases
+Add new Terraform modules or use cases
 Improve existing configurations or structure
 Open issues for bugs, improvements, or questions
 Submit pull requests with clear documentation
