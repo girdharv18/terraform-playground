@@ -15,6 +15,7 @@ resource "aws_subnet" "main" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.subnet_cidr
   availability_zone = var.availability_zone
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "main-subnet"
@@ -103,12 +104,10 @@ resource "aws_instance" "web" {
 
       user_data = <<-EOF
               #!/bin/bash
-              set -e
+              exec > /var/log/user-data.log 2>&1
 
               # Update and install required packages
               yum update -y
-              amazon-linux-extras enable php8.2
-              amazon-linux-extras install -y php8.2
               yum install -y httpd php php-pdo php-mbstring php-dom php-gd php-json php-sqlite3 wget unzip
 
               # Start and enable Apache
@@ -137,7 +136,6 @@ resource "aws_instance" "web" {
               # Download and configure SQLite Integration plugin
               wget https://downloads.wordpress.org/plugin/sqlite-integration.1.8.1.zip
               unzip sqlite-integration.1.8.1.zip
-              cp -r sqlite-integration/wp-content/* wp-content/
               cp sqlite-integration/db.php wp-content/db.php
               rm -rf sqlite-integration sqlite-integration.1.8.1.zip
 
@@ -145,6 +143,7 @@ resource "aws_instance" "web" {
               mkdir -p wp-content/database
               chown -R apache:apache /var/www/html
               chmod -R 755 /var/www/html
+              chmod 775 wp-content/database
 
               # Setup wp-config.php with SQLite compatible config
               cp wp-config-sample.php wp-config.php
@@ -160,6 +159,7 @@ resource "aws_instance" "web" {
               systemctl restart httpd
 
               # Health check
+              systemctl status httpd
               curl -I http://localhost || true
               EOF
   tags = {
