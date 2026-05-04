@@ -12,12 +12,17 @@ resource "aws_vpc" "main" {
 
 # Subnet
 resource "aws_subnet" "main" {
+  count             = length(var.subnet_cidrs)
   vpc_id            = aws_vpc.main.id
-  cidr_block        = var.subnet_cidr
-  availability_zone = var.availability_zone
+  cidr_block        = var.subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+
+  map_public_ip_on_launch = true
 
   tags = {
-    Name = "main-subnet"
+    Name = "main-subnet-${count.index + 1}"
+    "kubernetes.io/cluster/dev-eks-cluster" = "shared"
+    "kubernetes.io/role/elb"               = "1"
   }
 }
 
@@ -46,7 +51,8 @@ resource "aws_route_table" "rt" {
 
 # Route Table Association
 resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.main.id
+  count          = length(aws_subnet.main)
+  subnet_id      = aws_subnet.main[count.index].id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -88,7 +94,7 @@ resource "aws_security_group" "main_sg" {
 resource "aws_instance" "web" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.main.id
+  subnet_id                   = aws_subnet.main[0].id
   vpc_security_group_ids      = [aws_security_group.main_sg.id]
   associate_public_ip_address = true
   key_name                    = var.key_name
