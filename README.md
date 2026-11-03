@@ -56,6 +56,46 @@ To try a Terraform configuration:
    terraform apply -var-file="dev.tfvars"
 
 
+### Run Terraform by base folder and environment
+
+From PowerShell, you can invoke the repository's profile dispatcher with the
+requested syntax:
+
+```bash
+terraform base_eks_cluster dev init
+```
+
+The current-user PowerShell profiles for Windows PowerShell and PowerShell 7
+are configured to load `terraform_profile.ps1` from this repository. Open a
+new PowerShell window to use the command. Confirm that the function is loaded
+with `Get-Command terraform`; its `CommandType` should be `Function`. If it is
+not loaded, run this once in the current terminal:
+
+```powershell
+. 'C:\Nishant\terraform-playground\terraform_profile.ps1'
+```
+
+Without the profile dispatcher, invoke the Python runner directly:
+
+```powershell
+python .\terraform_runner.py .\base_eks_cluster\ dev init
+```
+
+For `plan`, `apply`, and `destroy`, the runner automatically uses the
+environment's `.tfvars` file when present. It supports the nested layout
+(`env/dev/dev.tfvars`) and the existing flat layout (`dev.tfvars`):
+
+```bash
+python terraform_runner.py base_eks_cluster dev plan
+python terraform_runner.py base_eks_cluster dev apply
+```
+
+Additional Terraform arguments are passed through, for example:
+
+```bash
+python terraform_runner.py base_eks_cluster dev plan -out=dev.tfplan
+```
+
 👥 Contributing
 Contributions are welcome! Here’s how you can help:
 Add new Terraform modules or use cases
@@ -87,4 +127,3 @@ Happy Terraforming! ⚙️
 ---
 
 Let me know if you'd like help creating a `CONTRIBUTING.md`, issue templates, or GitHub Actions for CI/linting Terraform code.
-
